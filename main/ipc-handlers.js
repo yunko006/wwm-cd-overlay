@@ -116,3 +116,27 @@ ipcMain.on(IPC.DISCONNECT, () => {
     overlayWin.webContents.send(IPC.DISCONNECT)
   }
 })
+
+// --- Overlay appearance ---
+ipcMain.handle(IPC.OVERLAY_GET_APPEARANCE, () => {
+  return store.get('overlayAppearance')
+})
+
+ipcMain.handle(IPC.OVERLAY_SET_APPEARANCE, (_, appearance) => {
+  store.set('overlayAppearance', appearance)
+  const { getOverlayWin } = require('./main')
+  const overlayWin = getOverlayWin()
+  if (overlayWin) overlayWin.webContents.send(IPC.OVERLAY_SET_APPEARANCE, appearance)
+})
+
+// --- Overlay ignore mouse ---
+ipcMain.on(IPC.OVERLAY_SET_IGNORE_MOUSE, (_, ignore) => {
+  const { getOverlayWin } = require('./main')
+  const overlayWin = getOverlayWin()
+  if (!overlayWin) return
+  overlayWin.setIgnoreMouseEvents(ignore, { forward: true })
+  if (!ignore) {
+    overlayWin.setAlwaysOnTop(true, 'screen-saver')
+    overlayWin.focus()
+  }
+})

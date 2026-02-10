@@ -20,4 +20,15 @@ contextBridge.exposeInMainWorld('overlayAPI', {
 
   setOverlayBounds: (bounds) => ipcRenderer.invoke(IPC.OVERLAY_SET_BOUNDS, bounds),
   getOverlayBounds: ()       => ipcRenderer.invoke(IPC.OVERLAY_GET_BOUNDS),
+
+  getOverlayAppearance: () => ipcRenderer.invoke(IPC.OVERLAY_GET_APPEARANCE),
+  onAppearanceChange: (cb) => {
+    ipcRenderer.removeAllListeners(IPC.OVERLAY_SET_APPEARANCE)
+    ipcRenderer.on(IPC.OVERLAY_SET_APPEARANCE, (_, appearance) => cb(appearance))
+  },
+  setIgnoreMouse: (ignore) => ipcRenderer.send(IPC.OVERLAY_SET_IGNORE_MOUSE, ignore),
+  onToggleDragMode: (cb) => {
+    ipcRenderer.removeAllListeners(IPC.OVERLAY_TOGGLE_DRAG_MODE)
+    ipcRenderer.on(IPC.OVERLAY_TOGGLE_DRAG_MODE, () => cb())
+  },
 })

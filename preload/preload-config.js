@@ -13,6 +13,8 @@ contextBridge.exposeInMainWorld('configAPI', {
   connect:    (settings) => ipcRenderer.send(IPC.CONNECT, settings),
   disconnect: ()         => ipcRenderer.send(IPC.DISCONNECT),
 
-  getOverlayBounds: ()       => ipcRenderer.invoke(IPC.OVERLAY_GET_BOUNDS),
-  setOverlayBounds: (bounds) => ipcRenderer.invoke(IPC.OVERLAY_SET_BOUNDS, bounds),
+  getOverlayBounds:      ()           => ipcRenderer.invoke(IPC.OVERLAY_GET_BOUNDS),
+  setOverlayBounds:      (bounds)     => ipcRenderer.invoke(IPC.OVERLAY_SET_BOUNDS, bounds),
+  getOverlayAppearance:  ()           => ipcRenderer.invoke(IPC.OVERLAY_GET_APPEARANCE),
+  setOverlayAppearance:  (appearance) => ipcRenderer.invoke(IPC.OVERLAY_SET_APPEARANCE, appearance),
 })

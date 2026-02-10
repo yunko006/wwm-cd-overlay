@@ -15,6 +15,30 @@ body {
   cursor: none;
 }
 
+#drag-bar {
+  height: 14px;
+  width: 100%;
+  background: transparent;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+body.drag-mode #drag-bar {
+  background: rgba(255,255,255,0.08);
+  opacity: 1;
+}
+#drag-bar::after {
+  content: '';
+  width: 40px;
+  height: 3px;
+  background: rgba(255,255,255,0.35);
+  border-radius: 2px;
+}
+#drag-bar:active { cursor: grabbing; }
+
 #tiles {
   display: flex;
   flex-wrap: wrap;

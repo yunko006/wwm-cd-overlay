@@ -264,3 +264,57 @@ window.overlayAPI.onDisconnect(() => {
   removeVideoTile('__self__')
   tilesContainer.innerHTML = ''
 })
+
+// ---- Drag bar ----
+
+const dragBar = document.getElementById('drag-bar')
+let dragMode = false
+let dragging = false, startX, startY, winStartX, winStartY
+
+window.overlayAPI.onToggleDragMode(() => {
+  dragMode = !dragMode
+  document.body.classList.toggle('drag-mode', dragMode)
+  window.overlayAPI.setIgnoreMouse(!dragMode)
+  // Pré-charger les bounds dès l'activation du mode drag
+  if (dragMode) {
+    window.overlayAPI.getOverlayBounds().then(b => { winStartX = b.x; winStartY = b.y })
+  }
+})
+
+dragBar.addEventListener('mouseenter', () => {
+  if (dragMode) {
+    window.overlayAPI.getOverlayBounds().then(b => { winStartX = b.x; winStartY = b.y })
+  }
+})
+
+dragBar.addEventListener('mousedown', e => {
+  if (!dragMode) return
+  dragging = true
+  startX = e.screenX
+  startY = e.screenY
+  e.preventDefault()
+})
+
+document.addEventListener('mousemove', e => {
+  if (!dragging) return
+  window.overlayAPI.setOverlayBounds({
+    x: winStartX + (e.screenX - startX),
+    y: winStartY + (e.screenY - startY)
+  })
+})
+
+document.addEventListener('mouseup', () => {
+  dragging = false
+})
+
+// ---- Appearance ----
+
+window.overlayAPI.onAppearanceChange(({ tileSize, nameSize }) => {
+  document.documentElement.style.setProperty('--tile-size', tileSize + 'px')
+  document.documentElement.style.setProperty('--name-size', nameSize + 'px')
+})
+
+window.overlayAPI.getOverlayAppearance().then(({ tileSize, nameSize }) => {
+  document.documentElement.style.setProperty('--tile-size', tileSize + 'px')
+  document.documentElement.style.setProperty('--name-size', nameSize + 'px')
+})

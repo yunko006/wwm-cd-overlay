@@ -9,6 +9,10 @@ const overlayXInput    = document.getElementById('overlayX')
 const overlayYInput    = document.getElementById('overlayY')
 const overlayWInput    = document.getElementById('overlayW')
 const btnApplyBounds   = document.getElementById('btnApplyBounds')
+const tileSizeInput    = document.getElementById('tileSize')
+const nameSizeInput    = document.getElementById('nameSize')
+const tileSizeVal      = document.getElementById('tileSizeVal')
+const nameSizeVal      = document.getElementById('nameSizeVal')
 
 let currentSourceId = null
 
@@ -26,6 +30,12 @@ async function init() {
     if (bounds.y     != null) overlayYInput.value = bounds.y
     if (bounds.width != null) overlayWInput.value = bounds.width
   }
+
+  const appearance = await window.configAPI.getOverlayAppearance()
+  tileSizeInput.value = appearance.tileSize
+  nameSizeInput.value = appearance.nameSize
+  tileSizeVal.textContent = appearance.tileSize
+  nameSizeVal.textContent = appearance.nameSize
 }
 
 function showCalibration(zone) {
@@ -57,6 +67,16 @@ btnApplyBounds.addEventListener('click', () => {
   const y = overlayYInput.value !== '' ? parseInt(overlayYInput.value, 10) : null
   const width = overlayWInput.value !== '' ? parseInt(overlayWInput.value, 10) : null
   window.configAPI.setOverlayBounds({ x, y, width })
+})
+
+// --- Appearance sliders ---
+tileSizeInput.addEventListener('input', () => {
+  tileSizeVal.textContent = tileSizeInput.value
+  window.configAPI.setOverlayAppearance({ tileSize: +tileSizeInput.value, nameSize: +nameSizeInput.value })
+})
+nameSizeInput.addEventListener('input', () => {
+  nameSizeVal.textContent = nameSizeInput.value
+  window.configAPI.setOverlayAppearance({ tileSize: +tileSizeInput.value, nameSize: +nameSizeInput.value })
 })
 
 // --- Connect / Disconnect ---

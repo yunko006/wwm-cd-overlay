@@ -15,7 +15,15 @@ const store = new Store({
     },
     playerName:   { type: 'string', default: '' },
     roomId:       { type: 'string', default: '' },
-    signalingURL: { type: 'string', default: 'wss://votre-serveur.railway.app' }
+    signalingURL: { type: 'string', default: 'wss://votre-serveur.railway.app' },
+    overlayAppearance: {
+      type: 'object',
+      default: { tileSize: 120, nameSize: 10 },
+      properties: {
+        tileSize: { type: 'number' },
+        nameSize: { type: 'number' }
+      }
+    }
   }
 })
 

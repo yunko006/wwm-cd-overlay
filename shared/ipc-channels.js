@@ -13,4 +13,8 @@ module.exports = {
   TOGGLE_CLICK_THROUGH:    'overlay:toggle-click-through',
   OVERLAY_SET_BOUNDS:      'overlay:set-bounds',
   OVERLAY_GET_BOUNDS:      'overlay:get-bounds',
+  OVERLAY_SET_APPEARANCE:  'overlay:set-appearance',
+  OVERLAY_GET_APPEARANCE:  'overlay:get-appearance',
+  OVERLAY_SET_IGNORE_MOUSE:'overlay:set-ignore-mouse',
+  OVERLAY_TOGGLE_DRAG_MODE:'overlay:toggle-drag-mode',
 }

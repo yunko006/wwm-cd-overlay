@@ -1,6 +1,7 @@
 const { app, BrowserWindow, globalShortcut } = require('electron')
 const path = require('path')
 const store = require('./store')
+const IPC = require('../shared/ipc-channels')
 
 // Force GDI fallback for desktop capture (avoids DXGI mutex errors with fullscreen games)
 app.commandLine.appendSwitch('disable-features', 'DesktopCaptureMacV2,DirectXCapturer')
@@ -47,12 +48,17 @@ function createOverlayWindow() {
   })
   overlayWin.loadFile(path.join(__dirname, '../renderer/overlay/overlay.html'))
   overlayWin.setIgnoreMouseEvents(true, { forward: true })
+  overlayWin.setAlwaysOnTop(true, 'screen-saver')
   overlayWin.on('closed', () => { overlayWin = null })
 }
 
 app.whenReady().then(() => {
   createConfigWindow()
   createOverlayWindow()
+
+  globalShortcut.register('Alt+O', () => {
+    if (overlayWin) overlayWin.webContents.send(IPC.OVERLAY_TOGGLE_DRAG_MODE)
+  })
 })
 
 app.on('window-all-closed', () => {

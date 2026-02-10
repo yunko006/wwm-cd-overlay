@@ -94,6 +94,27 @@ button.primary:hover:not(:disabled) {
   background: #00cc66;
 }
 
+.slider-row {
+  margin-bottom: 10px;
+}
+
+.slider-row label {
+  font-size: 12px;
+  text-transform: none;
+  letter-spacing: 0;
+  color: #ccc;
+  margin-bottom: 4px;
+}
+
+.slider-row input[type="range"] {
+  padding: 0;
+  height: 4px;
+  accent-color: #00ff88;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+}
+
 .actions {
   display: flex;
   gap: 8px;
