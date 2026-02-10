@@ -1,0 +1,49 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: transparent;
+  overflow: hidden;
+  -webkit-app-region: drag;
+}
+
+#tiles {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  -webkit-app-region: no-drag;
+}
+
+.tile span {
+  color: white;
+  font-size: 10px;
+  font-family: sans-serif;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tile video {
+  width: 120px;
+  height: 120px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  object-fit: cover;
+}
+
+/* Indicateur visuel quand l'overlay est en mode interactif (Alt+O) */
+body.interactive {
+  outline: 2px solid rgba(0, 255, 136, 0.6);
+}
