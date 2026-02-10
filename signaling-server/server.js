@@ -1,10 +1,17 @@
+const http = require('http')
 const { WebSocketServer } = require('ws')
 const RoomManager = require('./room-manager')
 
 const PORT = process.env.PORT || 3000
 const HEARTBEAT_INTERVAL = 30000
 
-const wss = new WebSocketServer({ port: PORT })
+// HTTP server for Railway healthcheck
+const server = http.createServer((req, res) => {
+  res.writeHead(200)
+  res.end('OK')
+})
+
+const wss = new WebSocketServer({ server })
 const rooms = new RoomManager()
 
 // Track peerId per ws connection
@@ -108,4 +115,6 @@ wss.on('close', () => {
   clearInterval(heartbeat)
 })
 
-console.log(`[Signaling] Server listening on port ${PORT}`)
+server.listen(PORT, () => {
+  console.log(`[Signaling] Server listening on port ${PORT}`)
+})
