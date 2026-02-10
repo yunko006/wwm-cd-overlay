@@ -1,5 +1,6 @@
 const { app, BrowserWindow, globalShortcut } = require('electron')
 const path = require('path')
+const store = require('./store')
 
 // Force GDI fallback for desktop capture (avoids DXGI mutex errors with fullscreen games)
 app.commandLine.appendSwitch('disable-features', 'DesktopCaptureMacV2,DirectXCapturer')
@@ -7,6 +8,8 @@ app.commandLine.appendSwitch('disable-features', 'DesktopCaptureMacV2,DirectXCap
 require('./ipc-handlers')
 
 let configWin, overlayWin
+let overlayClickThrough = true
+let alwaysOnTopInterval = null
 
 function createConfigWindow() {
   configWin = new BrowserWindow({
@@ -25,9 +28,11 @@ function createConfigWindow() {
 }
 
 function createOverlayWindow() {
+  const savedBounds = store.get('overlayBounds', null)
   overlayWin = new BrowserWindow({
-    width: 650,
-    height: 160,
+    width:  savedBounds?.width ?? 650,
+    height: 24,
+    ...(savedBounds?.x != null && savedBounds?.y != null ? { x: savedBounds.x, y: savedBounds.y } : {}),
     transparent: true,
     frame: false,
     alwaysOnTop: true,
@@ -53,9 +58,25 @@ app.whenReady().then(() => {
 
   globalShortcut.register('Alt+O', () => {
     if (!overlayWin) return
-    const isIgnoring = overlayWin.isIgnoreMouseEvents()
-    overlayWin.setIgnoreMouseEvents(!isIgnoring, { forward: true })
-    overlayWin.webContents.send('overlay:toggle-click-through', !isIgnoring)
+    overlayClickThrough = !overlayClickThrough
+    overlayWin.setIgnoreMouseEvents(overlayClickThrough, { forward: true })
+    overlayWin.setAlwaysOnTop(true, 'screen-saver')
+    overlayWin.webContents.send('overlay:toggle-click-through', overlayClickThrough)
+
+    if (!overlayClickThrough) {
+      // Mode interactif : forcer alwaysOnTop en continu pour rester au-dessus du jeu
+      alwaysOnTopInterval = setInterval(() => {
+        if (overlayWin) overlayWin.setAlwaysOnTop(true, 'screen-saver')
+      }, 200)
+    } else {
+      // Retour click-through : arrêter l'interval et sauvegarder la position
+      clearInterval(alwaysOnTopInterval)
+      alwaysOnTopInterval = null
+      if (overlayWin) {
+        const { x, y, width } = overlayWin.getBounds()
+        store.set('overlayBounds', { x, y, width })
+      }
+    }
   })
 })
 

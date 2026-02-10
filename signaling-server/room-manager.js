@@ -36,7 +36,8 @@ class RoomManager {
       if (!room.has(fromPeerId)) continue
       const target = room.get(msg.to)
       if (!target) return { error: 'UNKNOWN_PEER' }
-      target.ws.send(JSON.stringify({ ...msg, from: fromPeerId, to: undefined }))
+      const sender = room.get(fromPeerId)
+      target.ws.send(JSON.stringify({ ...msg, from: fromPeerId, playerName: sender?.playerName, to: undefined }))
       return {}
     }
     return { error: 'UNKNOWN_PEER' }

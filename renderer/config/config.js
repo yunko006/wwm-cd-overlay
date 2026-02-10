@@ -5,6 +5,10 @@ const calibStatus      = document.getElementById('calibrationStatus')
 const btnCalibrate     = document.getElementById('btnCalibrate')
 const btnConnect       = document.getElementById('btnConnect')
 const btnDisconnect    = document.getElementById('btnDisconnect')
+const overlayXInput    = document.getElementById('overlayX')
+const overlayYInput    = document.getElementById('overlayY')
+const overlayWInput    = document.getElementById('overlayW')
+const btnApplyBounds   = document.getElementById('btnApplyBounds')
 
 let currentSourceId = null
 
@@ -14,6 +18,13 @@ async function init() {
   if (calibration) {
     showCalibration(calibration)
     currentSourceId = calibration.sourceId
+  }
+
+  const bounds = await window.configAPI.getOverlayBounds()
+  if (bounds) {
+    if (bounds.x     != null) overlayXInput.value = bounds.x
+    if (bounds.y     != null) overlayYInput.value = bounds.y
+    if (bounds.width != null) overlayWInput.value = bounds.width
   }
 }
 
@@ -40,8 +51,16 @@ window.configAPI.onCalibrationDone(zone => {
   currentSourceId = zone.sourceId
 })
 
+// --- Overlay bounds ---
+btnApplyBounds.addEventListener('click', () => {
+  const x = overlayXInput.value !== '' ? parseInt(overlayXInput.value, 10) : null
+  const y = overlayYInput.value !== '' ? parseInt(overlayYInput.value, 10) : null
+  const width = overlayWInput.value !== '' ? parseInt(overlayWInput.value, 10) : null
+  window.configAPI.setOverlayBounds({ x, y, width })
+})
+
 // --- Connect / Disconnect ---
-btnConnect.addEventListener('click', () => {
+btnConnect.addEventListener('click', async () => {
   const playerName  = playerNameInput.value.trim()
   const roomId      = roomIdInput.value.trim()
   const signalingURL = signalingInput.value.trim()
@@ -55,11 +74,14 @@ btnConnect.addEventListener('click', () => {
     return
   }
 
+  const calibration = await window.configAPI.loadCalibration()
+
   window.configAPI.connect({
     playerName,
     roomId,
     signalingURL,
     sourceId: currentSourceId,
+    calibration,
   })
 
   btnConnect.disabled    = true

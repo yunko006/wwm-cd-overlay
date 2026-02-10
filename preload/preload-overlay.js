@@ -5,7 +5,19 @@ contextBridge.exposeInMainWorld('overlayAPI', {
   getSources:           ()   => ipcRenderer.invoke(IPC.GET_SOURCES),
   loadCalibration:      ()   => ipcRenderer.invoke(IPC.LOAD_CALIBRATION),
 
-  onConnect:            (cb) => ipcRenderer.on(IPC.CONNECT,              (_, s) => cb(s)),
-  onDisconnect:         (cb) => ipcRenderer.on(IPC.DISCONNECT,            ()    => cb()),
-  onToggleClickThrough: (cb) => ipcRenderer.on(IPC.TOGGLE_CLICK_THROUGH,  (_, v) => cb(v)),
+  onConnect: (cb) => {
+    ipcRenderer.removeAllListeners(IPC.CONNECT)
+    ipcRenderer.on(IPC.CONNECT, (_, s) => cb(s))
+  },
+  onDisconnect: (cb) => {
+    ipcRenderer.removeAllListeners(IPC.DISCONNECT)
+    ipcRenderer.on(IPC.DISCONNECT, () => cb())
+  },
+  onToggleClickThrough: (cb) => {
+    ipcRenderer.removeAllListeners(IPC.TOGGLE_CLICK_THROUGH)
+    ipcRenderer.on(IPC.TOGGLE_CLICK_THROUGH, (_, v) => cb(v))
+  },
+
+  setOverlayBounds: (bounds) => ipcRenderer.invoke(IPC.OVERLAY_SET_BOUNDS, bounds),
+  getOverlayBounds: ()       => ipcRenderer.invoke(IPC.OVERLAY_GET_BOUNDS),
 })

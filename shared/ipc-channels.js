@@ -11,4 +11,6 @@ module.exports = {
   CONNECT:                 'overlay:connect',
   DISCONNECT:              'overlay:disconnect',
   TOGGLE_CLICK_THROUGH:    'overlay:toggle-click-through',
+  OVERLAY_SET_BOUNDS:      'overlay:set-bounds',
+  OVERLAY_GET_BOUNDS:      'overlay:get-bounds',
 }

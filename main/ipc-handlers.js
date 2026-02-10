@@ -80,6 +80,27 @@ ipcMain.handle(IPC.CALIBRATION_SUBMIT, (_, zone) => {
   }
 })
 
+// --- Overlay bounds ---
+ipcMain.handle(IPC.OVERLAY_GET_BOUNDS, () => {
+  return store.get('overlayBounds', null)
+})
+
+ipcMain.handle(IPC.OVERLAY_SET_BOUNDS, (_, bounds) => {
+  const { getOverlayWin } = require('./main')
+  const overlayWin = getOverlayWin()
+  if (!overlayWin) return
+  const current = overlayWin.getBounds()
+  const next = {
+    x:      bounds.x      ?? current.x,
+    y:      bounds.y      ?? current.y,
+    width:  bounds.width  ?? current.width,
+    height: bounds.height ?? current.height,
+  }
+  overlayWin.setBounds(next)
+  // Ne pas persister height — elle est recalculée dynamiquement par le renderer
+  store.set('overlayBounds', { x: next.x, y: next.y, width: next.width })
+})
+
 // --- Connect / Disconnect (config → overlay forwarding) ---
 ipcMain.on(IPC.CONNECT, (_, settings) => {
   const { getOverlayWin } = require('./main')
