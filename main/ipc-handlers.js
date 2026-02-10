@@ -97,7 +97,6 @@ ipcMain.handle(IPC.OVERLAY_SET_BOUNDS, (_, bounds) => {
     height: bounds.height ?? current.height,
   }
   overlayWin.setBounds(next)
-  // Ne pas persister height — elle est recalculée dynamiquement par le renderer
   store.set('overlayBounds', { x: next.x, y: next.y, width: next.width })
 })
 

@@ -8,8 +8,6 @@ app.commandLine.appendSwitch('disable-features', 'DesktopCaptureMacV2,DirectXCap
 require('./ipc-handlers')
 
 let configWin, overlayWin
-let overlayClickThrough = true
-let alwaysOnTopInterval = null
 
 function createConfigWindow() {
   configWin = new BrowserWindow({
@@ -31,7 +29,7 @@ function createOverlayWindow() {
   const savedBounds = store.get('overlayBounds', null)
   overlayWin = new BrowserWindow({
     width:  savedBounds?.width ?? 650,
-    height: 24,
+    height: savedBounds?.height ?? 200,
     ...(savedBounds?.x != null && savedBounds?.y != null ? { x: savedBounds.x, y: savedBounds.y } : {}),
     transparent: true,
     frame: false,
@@ -55,29 +53,6 @@ function createOverlayWindow() {
 app.whenReady().then(() => {
   createConfigWindow()
   createOverlayWindow()
-
-  globalShortcut.register('Alt+O', () => {
-    if (!overlayWin) return
-    overlayClickThrough = !overlayClickThrough
-    overlayWin.setIgnoreMouseEvents(overlayClickThrough, { forward: true })
-    overlayWin.setAlwaysOnTop(true, 'screen-saver')
-    overlayWin.webContents.send('overlay:toggle-click-through', overlayClickThrough)
-
-    if (!overlayClickThrough) {
-      // Mode interactif : forcer alwaysOnTop en continu pour rester au-dessus du jeu
-      alwaysOnTopInterval = setInterval(() => {
-        if (overlayWin) overlayWin.setAlwaysOnTop(true, 'screen-saver')
-      }, 200)
-    } else {
-      // Retour click-through : arrêter l'interval et sauvegarder la position
-      clearInterval(alwaysOnTopInterval)
-      alwaysOnTopInterval = null
-      if (overlayWin) {
-        const { x, y, width } = overlayWin.getBounds()
-        store.set('overlayBounds', { x, y, width })
-      }
-    }
-  })
 })
 
 app.on('window-all-closed', () => {

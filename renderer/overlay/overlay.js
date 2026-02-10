@@ -50,7 +50,6 @@ class WebRTCManager {
         }
         break
       case 'peer-joined':
-        // New peer arrives — they'll send us an offer, we wait
         if (msg.playerName) this.peerNames.set(msg.peerId, msg.playerName)
         break
       case 'peer-left':
@@ -166,20 +165,17 @@ async function startCapture(sourceId, zone) {
 
   const scaleX = captureVideo.videoWidth  / screen.width
   const scaleY = captureVideo.videoHeight / screen.height
-  const TARGET_FPS = 15
 
   function drawFrame() {
     captureCtx.drawImage(
       captureVideo,
-      zone.x * scaleX,
-      zone.y * scaleY,
-      zone.width  * scaleX,
-      zone.height * scaleY,
+      zone.x * scaleX, zone.y * scaleY,
+      zone.width * scaleX, zone.height * scaleY,
       0, 0, 120, 120
     )
   }
 
-  captureInterval = setInterval(drawFrame, 1000 / TARGET_FPS)
+  captureInterval = setInterval(drawFrame, 1000 / 15)
   return captureCanvas.captureStream(15)
 }
 
@@ -268,92 +264,3 @@ window.overlayAPI.onDisconnect(() => {
   removeVideoTile('__self__')
   tilesContainer.innerHTML = ''
 })
-
-window.overlayAPI.onToggleClickThrough(isClickThrough => {
-  document.body.classList.toggle('interactive', !isClickThrough)
-})
-
-// ---- Tile size + hide ----
-
-const tileSizeSlider = document.getElementById('tile-size-slider')
-const nameSizeSlider = document.getElementById('name-size-slider')
-const btnHideTiles   = document.getElementById('btn-hide-tiles')
-
-function applyTileSize(size) {
-  document.documentElement.style.setProperty('--tile-size', size + 'px')
-  tileSizeSlider.value = size
-}
-
-function applyNameSize(size) {
-  document.documentElement.style.setProperty('--name-size', size + 'px')
-  nameSizeSlider.value = size
-}
-
-// Restore persisted values
-const savedTileSize = parseInt(localStorage.getItem('tileSize') ?? '120', 10)
-const savedNameSize = parseInt(localStorage.getItem('nameSize') ?? '10', 10)
-const savedHidden   = localStorage.getItem('tilesHidden') === 'true'
-applyTileSize(savedTileSize)
-applyNameSize(savedNameSize)
-if (savedHidden) {
-  document.body.classList.add('tiles-hidden')
-  btnHideTiles.textContent = '🚫'
-}
-
-tileSizeSlider.addEventListener('input', () => {
-  const size = parseInt(tileSizeSlider.value, 10)
-  applyTileSize(size)
-  localStorage.setItem('tileSize', size)
-})
-
-nameSizeSlider.addEventListener('input', () => {
-  const size = parseInt(nameSizeSlider.value, 10)
-  applyNameSize(size)
-  localStorage.setItem('nameSize', size)
-})
-
-btnHideTiles.addEventListener('click', () => {
-  const hidden = document.body.classList.toggle('tiles-hidden')
-  btnHideTiles.textContent = hidden ? '🚫' : '👁'
-  localStorage.setItem('tilesHidden', hidden)
-})
-
-// ---- Auto-height: resize window to fit wrapped tiles ----
-
-const ro = new ResizeObserver(() => {
-  const dragBarH = document.getElementById('drag-bar').offsetHeight
-  const tilesH   = tilesContainer.scrollHeight
-  const total    = dragBarH + tilesH
-  if (total > 0) window.overlayAPI.setOverlayBounds({ height: total })
-})
-ro.observe(tilesContainer)
-
-// ---- Resize handle ----
-
-const resizeHandle = document.getElementById('resize-handle')
-let resizeStartX = null
-let resizeStartWidth = null
-
-resizeHandle.addEventListener('mousedown', async e => {
-  e.preventDefault()
-  const bounds = await window.overlayAPI.getOverlayBounds()
-  resizeStartX = e.screenX
-  resizeStartWidth = bounds?.width ?? window.outerWidth
-
-  document.addEventListener('mousemove', onResizeMove)
-  document.addEventListener('mouseup', onResizeUp)
-})
-
-function onResizeMove(e) {
-  if (resizeStartX === null) return
-  const delta = e.screenX - resizeStartX
-  const newWidth = Math.max(200, resizeStartWidth + delta)
-  window.overlayAPI.setOverlayBounds({ width: newWidth })
-}
-
-function onResizeUp() {
-  resizeStartX = null
-  resizeStartWidth = null
-  document.removeEventListener('mousemove', onResizeMove)
-  document.removeEventListener('mouseup', onResizeUp)
-}
