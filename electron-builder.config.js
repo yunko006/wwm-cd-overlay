@@ -12,7 +12,7 @@ module.exports = {
   ],
   win: {
     target: ['nsis'],
-    icon: 'assets/icon.ico'
+    icon: 'assets/divinite.png'
   },
   nsis: {
     oneClick: true,
