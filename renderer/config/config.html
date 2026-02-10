@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
+  <title>WWM CD Overlay — Config</title>
+  <link rel="stylesheet" href="config.css">
+</head>
+<body>
+  <h1>WWM CD Overlay</h1>
+
+  <section>
+    <label for="playerName">Nom du joueur</label>
+    <input id="playerName" type="text" placeholder="Votre pseudo" maxlength="20">
+  </section>
+
+  <section>
+    <label for="roomId">Room ID</label>
+    <input id="roomId" type="text" placeholder="ex: room-abc123" maxlength="30">
+  </section>
+
+  <section>
+    <label for="signalingURL">Serveur de signaling</label>
+    <input id="signalingURL" type="text" placeholder="wss://votre-serveur.railway.app">
+  </section>
+
+  <section>
+    <label>Zone de capture</label>
+    <div id="calibrationStatus">Aucune zone configurée</div>
+    <button id="btnCalibrate">Sélectionner zone</button>
+  </section>
+
+  <section class="actions">
+    <button id="btnConnect" class="primary">Rejoindre</button>
+    <button id="btnDisconnect" disabled>Déconnecter</button>
+  </section>
+
+  <script src="config.js"></script>
+</body>
+</html>
