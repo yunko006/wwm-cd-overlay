@@ -8,6 +8,7 @@ class WebRTCManager {
     this.onRemoteStream = onRemoteStream
     this.onPeerLeft = onPeerLeft
     this.peers = new Map()
+    this.peerNames = new Map()
     this.localStream = null
     this.ws = null
   }
@@ -50,12 +51,14 @@ class WebRTCManager {
         break
       case 'peer-joined':
         // New peer arrives — they'll send us an offer, we wait
+        if (msg.playerName) this.peerNames.set(msg.peerId, msg.playerName)
         break
       case 'peer-left':
         this.removePeer(msg.peerId)
         this.onPeerLeft(msg.peerId)
         break
       case 'offer':
+        if (msg.playerName) this.peerNames.set(msg.from, msg.playerName)
         await this.handleOffer(msg.from, msg.sdp)
         break
       case 'answer':
@@ -88,12 +91,13 @@ class WebRTCManager {
       }
     }
 
-    pc.ontrack = e => this.onRemoteStream(remotePeerId, e.streams[0])
+    pc.ontrack = e => this.onRemoteStream(remotePeerId, this.peerNames.get(remotePeerId) || remotePeerId, e.streams[0])
     this.peers.set(remotePeerId, pc)
     return pc
   }
 
-  async createOffer(remotePeerId) {
+  async createOffer(remotePeerId, remotePlayerName) {
+    if (remotePlayerName) this.peerNames.set(remotePeerId, remotePlayerName)
     const pc = await this.createPeerConnection(remotePeerId)
     const offer = await pc.createOffer()
     offer.sdp = preferVP9(offer.sdp)
@@ -143,7 +147,8 @@ async function startCapture(sourceId, zone) {
       mandatory: {
         chromeMediaSource: 'desktop',
         chromeMediaSourceId: sourceId,
-        maxFrameRate: 20
+        maxFrameRate: 20,
+        cursor: 'never'
       }
     }
   })
@@ -205,8 +210,6 @@ function addVideoTile(peerId, playerName, stream) {
   video.srcObject = stream
   video.autoplay = true
   video.muted = true
-  video.width = 120
-  video.height = 120
 
   tile.appendChild(label)
   tile.appendChild(video)
@@ -226,9 +229,9 @@ function generatePeerId() {
 }
 
 window.overlayAPI.onConnect(async settings => {
-  const { playerName, roomId, signalingURL, sourceId } = settings
+  const { playerName, roomId, signalingURL, sourceId, calibration: settingsCalib } = settings
 
-  const calibration = await window.overlayAPI.loadCalibration()
+  const calibration = settingsCalib || await window.overlayAPI.loadCalibration()
   if (!calibration) {
     console.warn('[Overlay] No calibration zone — stream will be empty')
   }
@@ -238,16 +241,19 @@ window.overlayAPI.onConnect(async settings => {
     localStream = await startCapture(sourceId || calibration.sourceId, calibration)
   }
 
+  const peerId = generatePeerId()
+
   rtcManager = new WebRTCManager(
     signalingURL,
-    generatePeerId(),
+    peerId,
     playerName,
-    (peerId, stream) => addVideoTile(peerId, peerId, stream),
-    (peerId) => removeVideoTile(peerId)
+    (remotePeerId, playerName, stream) => addVideoTile(remotePeerId, playerName, stream),
+    (remotePeerId) => removeVideoTile(remotePeerId)
   )
 
   if (localStream) {
     rtcManager.setLocalStream(localStream)
+    addVideoTile('__self__', playerName, localStream)
   }
 
   rtcManager.connect(roomId)
@@ -259,9 +265,95 @@ window.overlayAPI.onDisconnect(() => {
     rtcManager = null
   }
   stopCapture()
+  removeVideoTile('__self__')
   tilesContainer.innerHTML = ''
 })
 
 window.overlayAPI.onToggleClickThrough(isClickThrough => {
   document.body.classList.toggle('interactive', !isClickThrough)
 })
+
+// ---- Tile size + hide ----
+
+const tileSizeSlider = document.getElementById('tile-size-slider')
+const nameSizeSlider = document.getElementById('name-size-slider')
+const btnHideTiles   = document.getElementById('btn-hide-tiles')
+
+function applyTileSize(size) {
+  document.documentElement.style.setProperty('--tile-size', size + 'px')
+  tileSizeSlider.value = size
+}
+
+function applyNameSize(size) {
+  document.documentElement.style.setProperty('--name-size', size + 'px')
+  nameSizeSlider.value = size
+}
+
+// Restore persisted values
+const savedTileSize = parseInt(localStorage.getItem('tileSize') ?? '120', 10)
+const savedNameSize = parseInt(localStorage.getItem('nameSize') ?? '10', 10)
+const savedHidden   = localStorage.getItem('tilesHidden') === 'true'
+applyTileSize(savedTileSize)
+applyNameSize(savedNameSize)
+if (savedHidden) {
+  document.body.classList.add('tiles-hidden')
+  btnHideTiles.textContent = '🚫'
+}
+
+tileSizeSlider.addEventListener('input', () => {
+  const size = parseInt(tileSizeSlider.value, 10)
+  applyTileSize(size)
+  localStorage.setItem('tileSize', size)
+})
+
+nameSizeSlider.addEventListener('input', () => {
+  const size = parseInt(nameSizeSlider.value, 10)
+  applyNameSize(size)
+  localStorage.setItem('nameSize', size)
+})
+
+btnHideTiles.addEventListener('click', () => {
+  const hidden = document.body.classList.toggle('tiles-hidden')
+  btnHideTiles.textContent = hidden ? '🚫' : '👁'
+  localStorage.setItem('tilesHidden', hidden)
+})
+
+// ---- Auto-height: resize window to fit wrapped tiles ----
+
+const ro = new ResizeObserver(() => {
+  const dragBarH = document.getElementById('drag-bar').offsetHeight
+  const tilesH   = tilesContainer.scrollHeight
+  const total    = dragBarH + tilesH
+  if (total > 0) window.overlayAPI.setOverlayBounds({ height: total })
+})
+ro.observe(tilesContainer)
+
+// ---- Resize handle ----
+
+const resizeHandle = document.getElementById('resize-handle')
+let resizeStartX = null
+let resizeStartWidth = null
+
+resizeHandle.addEventListener('mousedown', async e => {
+  e.preventDefault()
+  const bounds = await window.overlayAPI.getOverlayBounds()
+  resizeStartX = e.screenX
+  resizeStartWidth = bounds?.width ?? window.outerWidth
+
+  document.addEventListener('mousemove', onResizeMove)
+  document.addEventListener('mouseup', onResizeUp)
+})
+
+function onResizeMove(e) {
+  if (resizeStartX === null) return
+  const delta = e.screenX - resizeStartX
+  const newWidth = Math.max(200, resizeStartWidth + delta)
+  window.overlayAPI.setOverlayBounds({ width: newWidth })
+}
+
+function onResizeUp() {
+  resizeStartX = null
+  resizeStartWidth = null
+  document.removeEventListener('mousemove', onResizeMove)
+  document.removeEventListener('mouseup', onResizeUp)
+}

@@ -2,11 +2,19 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' wss:; script-src 'self'; style-src 'self' 'unsafe-inline'; media-src *; connect-src wss:">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' wss: ws:; script-src 'self'; style-src 'self' 'unsafe-inline'; media-src *; connect-src wss: ws:">
   <title>Overlay</title>
   <link rel="stylesheet" href="overlay.css">
 </head>
 <body>
+  <div id="drag-bar">
+    <div id="bar-controls">
+      <input id="tile-size-slider" type="range" min="32" max="160" value="120" step="8">
+      <input id="name-size-slider" type="range" min="0" max="24" value="10" step="1">
+      <button id="btn-hide-tiles">👁</button>
+    </div>
+    <div id="resize-handle"></div>
+  </div>
   <div id="tiles"></div>
   <script src="overlay.js"></script>
 </body>

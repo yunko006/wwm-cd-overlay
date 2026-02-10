@@ -1,3 +1,8 @@
+:root {
+  --tile-size: 120px;
+  --name-size: 10px;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -7,11 +12,17 @@
 body {
   background: transparent;
   overflow: hidden;
-  -webkit-app-region: drag;
+  cursor: none;
+}
+
+body:not(.interactive),
+body:not(.interactive) * {
+  cursor: none !important;
 }
 
 #tiles {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   padding: 8px;
 }
@@ -26,24 +37,101 @@ body {
 
 .tile span {
   color: white;
-  font-size: 10px;
+  font-size: var(--name-size);
   font-family: sans-serif;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-  max-width: 120px;
+  max-width: var(--tile-size);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .tile video {
-  width: 120px;
-  height: 120px;
+  width: var(--tile-size);
+  height: var(--tile-size);
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   object-fit: cover;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
 }
 
-/* Indicateur visuel quand l'overlay est en mode interactif (Alt+O) */
+/* Tiles masquées (connecté mais invisible) */
+body.tiles-hidden #tiles {
+  visibility: hidden;
+}
+
+/* Barre de drag — invisible en click-through, visible en interactif */
+#drag-bar {
+  display: none;
+  height: 24px;
+  width: 100%;
+  background: rgba(0, 255, 136, 0.25);
+  border-bottom: 1px solid rgba(0, 255, 136, 0.6);
+  -webkit-app-region: drag;
+  cursor: grab;
+  position: relative;
+  align-items: center;
+}
+
+#bar-controls {
+  position: absolute;
+  left: 4px;
+  top: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  -webkit-app-region: no-drag;
+}
+
+#tile-size-slider {
+  width: 80px;
+  height: 10px;
+  cursor: pointer;
+  accent-color: rgba(0, 255, 136, 0.9);
+}
+
+#btn-hide-tiles {
+  background: none;
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  opacity: 0.8;
+}
+
+#btn-hide-tiles:hover {
+  opacity: 1;
+}
+
+#resize-handle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 16px;
+  height: 100%;
+  background: rgba(0, 255, 136, 0.5);
+  cursor: ew-resize;
+  -webkit-app-region: no-drag;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#resize-handle::after {
+  content: '⟺';
+  font-size: 10px;
+  color: rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+}
+
+/* Mode interactif (Alt+O) */
+body.interactive #drag-bar {
+  display: block;
+}
+
 body.interactive {
+  cursor: default;
   outline: 2px solid rgba(0, 255, 136, 0.6);
 }
