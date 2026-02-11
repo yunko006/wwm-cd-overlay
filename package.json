@@ -1,6 +1,6 @@
 {
   "name": "wwm-cd-overlay",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Team Cooldown Live Overlay for Where Winds Meet",
   "main": "main/main.js",
   "scripts": {
