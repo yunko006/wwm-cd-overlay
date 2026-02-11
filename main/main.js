@@ -6,7 +6,7 @@ const IPC = require('../shared/ipc-channels')
 // Force GDI fallback for desktop capture (avoids DXGI mutex errors with fullscreen games)
 app.commandLine.appendSwitch('disable-features', 'DesktopCaptureMacV2,DirectXCapturer')
 
-require('./ipc-handlers')
+const { setupConfigCloseHandler } = require('./ipc-handlers')
 
 let configWin, overlayWin
 
@@ -23,6 +23,7 @@ function createConfigWindow() {
     }
   })
   configWin.loadFile(path.join(__dirname, '../renderer/config/config.html'))
+  setupConfigCloseHandler(configWin)
   configWin.on('closed', () => { configWin = null })
 }
 

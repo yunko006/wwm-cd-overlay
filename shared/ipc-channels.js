@@ -17,4 +17,6 @@ module.exports = {
   OVERLAY_GET_APPEARANCE:  'overlay:get-appearance',
   OVERLAY_SET_IGNORE_MOUSE:'overlay:set-ignore-mouse',
   OVERLAY_TOGGLE_DRAG_MODE:'overlay:toggle-drag-mode',
+  CONFIG_SAVE_FIELDS:      'config:save-fields',
+  CONFIG_LOAD_FIELDS:      'config:load-fields',
 }

@@ -27,13 +27,21 @@ ipcMain.handle(IPC.OPEN_CALIBRATION_WINDOW, async (_, sourceId) => {
     return
   }
 
-  const { width, height } = screen.getPrimaryDisplay().bounds
+  // Find the display matching the chosen source
+  const allSources = await getSources()
+  const source = allSources.find(s => s.id === sourceId)
+  let displayBounds = screen.getPrimaryDisplay().bounds
+  if (source) {
+    const match = screen.getAllDisplays().find(d => String(d.id) === source.display_id)
+    if (match) displayBounds = match.bounds
+  }
+  const { x, y, width, height } = displayBounds
 
   calibWin = new BrowserWindow({
     width,
     height,
-    x: 0,
-    y: 0,
+    x,
+    y,
     transparent: true,
     backgroundColor: '#00000000',
     frame: false,
@@ -78,6 +86,21 @@ ipcMain.handle(IPC.CALIBRATION_SUBMIT, (_, zone) => {
   if (configWin) {
     configWin.webContents.send(IPC.CALIBRATION_DONE, zone)
   }
+})
+
+// --- Config fields persistence ---
+ipcMain.handle(IPC.CONFIG_LOAD_FIELDS, () => {
+  return {
+    playerName:   store.get('playerName'),
+    roomId:       store.get('roomId'),
+    signalingURL: store.get('signalingURL'),
+  }
+})
+
+ipcMain.handle(IPC.CONFIG_SAVE_FIELDS, (_, fields) => {
+  if (fields.playerName   !== undefined) store.set('playerName',   fields.playerName)
+  if (fields.roomId       !== undefined) store.set('roomId',       fields.roomId)
+  if (fields.signalingURL !== undefined) store.set('signalingURL', fields.signalingURL)
 })
 
 // --- Overlay bounds ---
@@ -128,6 +151,19 @@ ipcMain.handle(IPC.OVERLAY_SET_APPEARANCE, (_, appearance) => {
   const overlayWin = getOverlayWin()
   if (overlayWin) overlayWin.webContents.send(IPC.OVERLAY_SET_APPEARANCE, appearance)
 })
+
+// --- Auto-disconnect on config window close ---
+function setupConfigCloseHandler(configWin) {
+  configWin.on('close', () => {
+    const { getOverlayWin } = require('./main')
+    const overlayWin = getOverlayWin()
+    if (overlayWin) {
+      overlayWin.webContents.send(IPC.DISCONNECT)
+    }
+  })
+}
+
+module.exports = { setupConfigCloseHandler }
 
 // --- Overlay ignore mouse ---
 ipcMain.on(IPC.OVERLAY_SET_IGNORE_MOUSE, (_, ignore) => {
