@@ -14,5 +14,18 @@
   },
   "dependencies": {
     "electron-store": "^8.2.0"
+  },
+  "build": {
+    "appId": "com.wwm.cd-overlay",
+    "productName": "WWM CD Overlay",
+    "win": {
+      "icon": "assets/divinite.ico"
+    },
+    "files": [
+      "main/**/*",
+      "renderer/**/*",
+      "shared/**/*",
+      "assets/**/*"
+    ]
   }
 }
