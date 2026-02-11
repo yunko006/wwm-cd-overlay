@@ -152,6 +152,15 @@ ipcMain.handle(IPC.OVERLAY_SET_APPEARANCE, (_, appearance) => {
   if (overlayWin) overlayWin.webContents.send(IPC.OVERLAY_SET_APPEARANCE, appearance)
 })
 
+// --- Overlay visibility ---
+ipcMain.handle(IPC.OVERLAY_SET_VISIBILITY, (_, visible) => {
+  const { getOverlayWin } = require('./main')
+  const overlayWin = getOverlayWin()
+  if (!overlayWin) return
+  if (visible) overlayWin.show()
+  else overlayWin.hide()
+})
+
 // --- Quit app on config window close ---
 function setupConfigCloseHandler(configWin) {
   configWin.on('close', () => {

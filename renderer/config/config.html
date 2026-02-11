@@ -51,11 +51,29 @@
       <label>Taille des noms <span id="nameSizeVal">10</span>px</label>
       <input id="nameSize" type="range" min="8" max="24" step="1" value="10">
     </div>
+    <div class="radio-group">
+      <span>Direction</span>
+      <label><input type="radio" name="direction" value="horizontal"> Horizontal</label>
+      <label><input type="radio" name="direction" value="vertical"> Vertical</label>
+    </div>
+    <div class="slider-row">
+      <label>Activer multi-ligne après <span id="thresholdVal">4</span> tiles</label>
+      <input id="threshold" type="range" min="1" max="8" step="1" value="4">
+    </div>
+    <div class="slider-row" id="maxRowsRow">
+      <label>Nombre de lignes max : <span id="maxRowsVal">2</span></label>
+      <input id="maxRows" type="range" min="1" max="4" step="1" value="2">
+    </div>
+    <div class="slider-row" id="maxColsRow">
+      <label>Nombre de colonnes max : <span id="maxColsVal">2</span></label>
+      <input id="maxCols" type="range" min="1" max="4" step="1" value="2">
+    </div>
   </section>
 
   <section class="actions">
     <button id="btnConnect" class="primary">Rejoindre</button>
     <button id="btnDisconnect" disabled>Déconnecter</button>
+    <button id="btnToggleOverlay">Cacher l'overlay</button>
   </section>
 
   <script src="config.js"></script>

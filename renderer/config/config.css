@@ -115,6 +115,42 @@ button.primary:hover:not(:disabled) {
   background: transparent;
 }
 
+.radio-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.radio-group span {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #888;
+  margin-right: 4px;
+}
+
+.radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  text-transform: none;
+  letter-spacing: 0;
+  color: #ccc;
+  margin-bottom: 0;
+  cursor: pointer;
+}
+
+.radio-group input[type="radio"] {
+  width: auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  accent-color: #00ff88;
+  cursor: pointer;
+}
+
 .actions {
   display: flex;
   gap: 8px;

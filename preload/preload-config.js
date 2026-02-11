@@ -20,4 +20,5 @@ contextBridge.exposeInMainWorld('configAPI', {
   setOverlayBounds:      (bounds)     => ipcRenderer.invoke(IPC.OVERLAY_SET_BOUNDS, bounds),
   getOverlayAppearance:  ()           => ipcRenderer.invoke(IPC.OVERLAY_GET_APPEARANCE),
   setOverlayAppearance:  (appearance) => ipcRenderer.invoke(IPC.OVERLAY_SET_APPEARANCE, appearance),
+  setOverlayVisibility:  (visible)    => ipcRenderer.invoke(IPC.OVERLAY_SET_VISIBILITY, visible),
 })

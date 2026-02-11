@@ -210,10 +210,12 @@ function addVideoTile(peerId, playerName, stream) {
   tile.appendChild(label)
   tile.appendChild(video)
   tilesContainer.appendChild(tile)
+  applyLayout(currentAppearance, tilesContainer.children.length)
 }
 
 function removeVideoTile(peerId) {
   document.querySelector(`[data-peer-id="${peerId}"]`)?.remove()
+  applyLayout(currentAppearance, tilesContainer.children.length)
 }
 
 // ---- Main logic ----
@@ -307,14 +309,64 @@ document.addEventListener('mouseup', () => {
   dragging = false
 })
 
-// ---- Appearance ----
+// ---- Appearance & Layout ----
 
-window.overlayAPI.onAppearanceChange(({ tileSize, nameSize }) => {
-  document.documentElement.style.setProperty('--tile-size', tileSize + 'px')
-  document.documentElement.style.setProperty('--name-size', nameSize + 'px')
+const GAP = 8
+const DRAG_BAR_H = 14
+const PADDING = 8
+
+let currentAppearance = { direction: 'horizontal', maxRows: 2, maxCols: 2, threshold: 4, tileSize: 120, nameSize: 10 }
+
+function applyLayout(appearance, tileCount) {
+  const { direction, maxRows, maxCols, threshold, tileSize, nameSize } = appearance
+  const labelH = Math.ceil(nameSize * 1.4) + 2
+  const tileH = tileSize + labelH
+  const tileW = tileSize
+
+  if (direction === 'horizontal') {
+    tilesContainer.style.flexDirection = 'row'
+    tilesContainer.style.height = 'auto'
+
+    const effectiveRows = (tileCount > threshold && maxRows > 1) ? maxRows : 1
+    const effectiveCols = Math.ceil(tileCount / effectiveRows)
+
+    if (effectiveRows > 1) {
+      tilesContainer.style.maxHeight = (effectiveRows * tileH + (effectiveRows - 1) * GAP + PADDING * 2) + 'px'
+    } else {
+      tilesContainer.style.maxHeight = 'none'
+    }
+    tilesContainer.style.maxWidth = 'none'
+
+    const winW = effectiveCols * tileW + (effectiveCols - 1) * GAP + PADDING * 2
+    const winH = effectiveRows * tileH + (effectiveRows - 1) * GAP + PADDING * 2 + DRAG_BAR_H
+    window.overlayAPI.setOverlayBounds({ width: winW, height: winH })
+
+  } else {
+    tilesContainer.style.flexDirection = 'column'
+    tilesContainer.style.maxWidth = 'none'
+    tilesContainer.style.maxHeight = 'none'
+
+    const effectiveCols = (tileCount > threshold && maxCols > 1) ? maxCols : 1
+    const effectiveRows = Math.ceil(tileCount / effectiveCols)
+
+    tilesContainer.style.height = (effectiveRows * tileH + (effectiveRows - 1) * GAP + PADDING * 2) + 'px'
+
+    const winW = effectiveCols * tileW + (effectiveCols - 1) * GAP + PADDING * 2
+    const winH = effectiveRows * tileH + (effectiveRows - 1) * GAP + PADDING * 2 + DRAG_BAR_H
+    window.overlayAPI.setOverlayBounds({ width: winW, height: winH })
+  }
+}
+
+window.overlayAPI.onAppearanceChange((appearance) => {
+  document.documentElement.style.setProperty('--tile-size', appearance.tileSize + 'px')
+  document.documentElement.style.setProperty('--name-size', appearance.nameSize + 'px')
+  currentAppearance = appearance
+  applyLayout(appearance, tilesContainer.children.length)
 })
 
-window.overlayAPI.getOverlayAppearance().then(({ tileSize, nameSize }) => {
-  document.documentElement.style.setProperty('--tile-size', tileSize + 'px')
-  document.documentElement.style.setProperty('--name-size', nameSize + 'px')
+window.overlayAPI.getOverlayAppearance().then((appearance) => {
+  document.documentElement.style.setProperty('--tile-size', appearance.tileSize + 'px')
+  document.documentElement.style.setProperty('--name-size', appearance.nameSize + 'px')
+  currentAppearance = appearance
+  applyLayout(appearance, tilesContainer.children.length)
 })

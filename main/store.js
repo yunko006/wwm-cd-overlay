@@ -18,10 +18,14 @@ const store = new Store({
     signalingURL: { type: 'string', default: 'wss://votre-serveur.railway.app' },
     overlayAppearance: {
       type: 'object',
-      default: { tileSize: 120, nameSize: 10 },
+      default: { tileSize: 120, nameSize: 10, direction: 'horizontal', maxRows: 2, maxCols: 2, threshold: 4 },
       properties: {
-        tileSize: { type: 'number' },
-        nameSize: { type: 'number' }
+        tileSize:  { type: 'number' },
+        nameSize:  { type: 'number' },
+        direction: { type: 'string' },
+        maxRows:   { type: 'number' },
+        maxCols:   { type: 'number' },
+        threshold: { type: 'number' }
       }
     }
   }

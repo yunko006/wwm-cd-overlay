@@ -19,4 +19,5 @@ module.exports = {
   OVERLAY_TOGGLE_DRAG_MODE:'overlay:toggle-drag-mode',
   CONFIG_SAVE_FIELDS:      'config:save-fields',
   CONFIG_LOAD_FIELDS:      'config:load-fields',
+  OVERLAY_SET_VISIBILITY:  'overlay:set-visibility',
 }

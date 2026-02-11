@@ -14,6 +14,16 @@ const tileSizeInput    = document.getElementById('tileSize')
 const nameSizeInput    = document.getElementById('nameSize')
 const tileSizeVal      = document.getElementById('tileSizeVal')
 const nameSizeVal      = document.getElementById('nameSizeVal')
+const directionInputs  = document.querySelectorAll('input[name="direction"]')
+const thresholdInput   = document.getElementById('threshold')
+const thresholdVal     = document.getElementById('thresholdVal')
+const maxRowsInput     = document.getElementById('maxRows')
+const maxRowsVal       = document.getElementById('maxRowsVal')
+const maxRowsRow       = document.getElementById('maxRowsRow')
+const maxColsInput     = document.getElementById('maxCols')
+const maxColsVal       = document.getElementById('maxColsVal')
+const maxColsRow       = document.getElementById('maxColsRow')
+const btnToggleOverlay = document.getElementById('btnToggleOverlay')
 
 let currentSourceId = null
 let sources = []
@@ -58,6 +68,16 @@ async function init() {
   nameSizeInput.value = appearance.nameSize
   tileSizeVal.textContent = appearance.tileSize
   nameSizeVal.textContent = appearance.nameSize
+
+  const dir = appearance.direction || 'horizontal'
+  directionInputs.forEach(r => { r.checked = r.value === dir })
+  thresholdInput.value   = appearance.threshold ?? 4
+  thresholdVal.textContent = thresholdInput.value
+  maxRowsInput.value     = appearance.maxRows ?? 2
+  maxRowsVal.textContent = maxRowsInput.value
+  maxColsInput.value     = appearance.maxCols ?? 2
+  maxColsVal.textContent = maxColsInput.value
+  updateLayoutControls(dir)
 }
 
 function showCalibration(zone) {
@@ -102,13 +122,53 @@ btnApplyBounds.addEventListener('click', () => {
 })
 
 // --- Appearance sliders ---
+function getDirection() {
+  return [...directionInputs].find(r => r.checked)?.value || 'horizontal'
+}
+
+function updateLayoutControls(direction) {
+  maxRowsRow.style.display = direction === 'horizontal' ? '' : 'none'
+  maxColsRow.style.display = direction === 'vertical'   ? '' : 'none'
+}
+
+function sendAppearance() {
+  window.configAPI.setOverlayAppearance({
+    tileSize:  +tileSizeInput.value,
+    nameSize:  +nameSizeInput.value,
+    direction: getDirection(),
+    threshold: +thresholdInput.value,
+    maxRows:   +maxRowsInput.value,
+    maxCols:   +maxColsInput.value,
+  })
+}
+
 tileSizeInput.addEventListener('input', () => {
   tileSizeVal.textContent = tileSizeInput.value
-  window.configAPI.setOverlayAppearance({ tileSize: +tileSizeInput.value, nameSize: +nameSizeInput.value })
+  sendAppearance()
 })
 nameSizeInput.addEventListener('input', () => {
   nameSizeVal.textContent = nameSizeInput.value
-  window.configAPI.setOverlayAppearance({ tileSize: +tileSizeInput.value, nameSize: +nameSizeInput.value })
+  sendAppearance()
+})
+
+directionInputs.forEach(r => r.addEventListener('change', () => {
+  updateLayoutControls(r.value)
+  sendAppearance()
+}))
+
+thresholdInput.addEventListener('input', () => {
+  thresholdVal.textContent = thresholdInput.value
+  sendAppearance()
+})
+
+maxRowsInput.addEventListener('input', () => {
+  maxRowsVal.textContent = maxRowsInput.value
+  sendAppearance()
+})
+
+maxColsInput.addEventListener('input', () => {
+  maxColsVal.textContent = maxColsInput.value
+  sendAppearance()
 })
 
 // --- Auto-save fields on blur ---
@@ -158,6 +218,14 @@ btnDisconnect.addEventListener('click', () => {
   window.configAPI.disconnect()
   btnConnect.disabled    = false
   btnDisconnect.disabled = true
+})
+
+// --- Hide / Show overlay ---
+let overlayVisible = true
+btnToggleOverlay.addEventListener('click', () => {
+  overlayVisible = !overlayVisible
+  window.configAPI.setOverlayVisibility(overlayVisible)
+  btnToggleOverlay.textContent = overlayVisible ? "Cacher l'overlay" : "Afficher l'overlay"
 })
 
 init()
