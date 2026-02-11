@@ -152,14 +152,11 @@ ipcMain.handle(IPC.OVERLAY_SET_APPEARANCE, (_, appearance) => {
   if (overlayWin) overlayWin.webContents.send(IPC.OVERLAY_SET_APPEARANCE, appearance)
 })
 
-// --- Auto-disconnect on config window close ---
+// --- Quit app on config window close ---
 function setupConfigCloseHandler(configWin) {
   configWin.on('close', () => {
-    const { getOverlayWin } = require('./main')
-    const overlayWin = getOverlayWin()
-    if (overlayWin) {
-      overlayWin.webContents.send(IPC.DISCONNECT)
-    }
+    const { app } = require('electron')
+    app.quit()
   })
 }
 
